@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>ALTIFY - App Recommender</title>
+
+    <!-- Google Font -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;500;600&display=swap" rel="stylesheet">
+
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+
+<body>
+
+    <!-- NAVBAR -->
+    <div class="navbar">
+        <h1> ALTIFY</h1>
+        <p>Alternative Application Recommendation System</p>
+    </div>
+
+    <!-- SEARCH BOX -->
+   <div class="search-container">
+    <form action="/recommend" method="post" autocomplete="off">
+        <input type="text" id="searchBox" name="app_name" placeholder="Enter application name" required>
+        <button type="submit">Recommend</button>
+    </form>
+
+    <div id="suggestions"></div>
+</div>
+
+{% if history %}
+<div class="history">
+    <div class="history-header">
+        <h3>Recent Searches</h3>
+
+        <form action="/clear_history" method="post">
+            <button class="clear-btn">Clear All</button>
+        </form>
+    </div>
+
+    <div class="history-list">
+        {% for item in history %}
+        <div class="history-box">
+
+            <!-- Click to search again -->
+            <form action="/recommend" method="post">
+                <input type="hidden" name="app_name" value="{{ item }}">
+                <button class="history-item">{{ item }}</button>
+            </form>
+
+            <!-- Remove button -->
+            <form action="/remove_history" method="post">
+                <input type="hidden" name="item" value="{{ item }}">
+                <button class="remove-btn">❌</button>
+            </form>
+
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endif %}
+
+
+    <!-- RESULTS -->
+    {% if recommendations %}
+    <div class="results">
+        <h2>Results for "{{ app_name }}"</h2>
+
+        <div class="card-container">
+            {% for app in recommendations %}
+            <div class="card">
+
+                <div class="app-header">
+                  <img src="https://ui-avatars.com/api/?name={{ app.name }}&background=0D8ABC&color=fff&size=128" alt="icon">
+                  <h3>{{ app.name }}</h3>
+                </div>
+
+                <p>📂 {{ app.category }}</p>
+                <p>⭐ {{ app.Type }}</p>
+                <p>📥 {{ app.ContentRating }}</p>
+                <p> <a href="{{ app.app_link }}" target="_blank">View App</a></p>
+
+            </div>
+          {% endfor %}
+
+        </div>
+    </div>
+    {% endif %}
+
+<script>
+const searchBox = document.getElementById("searchBox");
+const suggestions = document.getElementById("suggestions");
+
+searchBox.addEventListener("keyup", function() {
+    let query = searchBox.value;
+
+    if (query.length === 0) {
+        suggestions.innerHTML = "";
+        return;
+    }
+
+    fetch(`/search?q=${query}`)
+        .then(response => response.json())
+        .then(data => {
+            suggestions.innerHTML = "";
+
+            data.forEach(item => {
+                let div = document.createElement("div");
+                div.classList.add("suggestion-item");
+                div.innerText = item;
+
+                div.onclick = () => {
+                    searchBox.value = item;
+                    suggestions.innerHTML = "";
+                };
+
+                suggestions.appendChild(div);
+            });
+        });
+});
+</script>
+
+
+
+
+</body>
+</html>
