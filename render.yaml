@@ -1,0 +1,11 @@
+services:
+  - type: web
+    name: altify-webapp
+    env: python
+    buildCommand: "pip install -r requirements.txt"
+    startCommand: "python app.py"
+    files:
+      - app.py
+      - .env
+      - templates/index.html
+      - static/style.css
